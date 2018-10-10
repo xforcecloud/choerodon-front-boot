@@ -15,6 +15,6 @@ cache:
 
 npm_build:
   script:
-   - npm install --registry=http://172.18.10.176:4873
+   - npm install --registry=http://172.18.10.176:4873 --unsafe-perm
    - echo //172.18.10.176:4873/:_authToken="opYAWNtOE5f+aT0QW8fofw==" > .npmrc
-   - npm publish --registry=http://172.18.10.176:4873 
+   - npm publish --registry=http://172.18.10.176:4873 --unsafe-perm
