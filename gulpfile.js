@@ -14,33 +14,22 @@ function compileAssets() {
   return gulp.src(['src/**/*.@(jpg|png|svg|scss|html|ico)']).pipe(gulp.dest(libDir));
 }
 
-function compileFile() {
-  const source = [
-    'src/**/*.js',
-    'src/**/*.jsx',
-  ];
+function compileFile(type) {
+  const source = [];
+  if (!type || type === 'js') {
+    source.push('src/**/*.js');
+  }
+  if (!type || type === 'jsx') {
+    source.push('src/**/*.jsx');
+  }
   return babelify(gulp.src(source));
-}
-
-function compileBin() {
-  rimraf.sync(libDir);
-  compileDir('bin');
-  compileDir('common');
-  compileDir('config');
-  compileDir('nunjucks');
-}
-
-function compileDir(dir) {
-  babelify(gulp.src([
-    'src/' + dir + '/**/*.js',
-    'src/' + dir + '/**/*.jsx',
-  ]), dir);
 }
 
 function compile() {
   rimraf.sync(libDir);
-  compileAssets();
-  compileFile();
+  const assets = compileAssets();
+  const jsFilesStream = compileFile();
+  // return merge2([jsFilesStream, assets]);
 }
 
 function getBabelCommonConfig() {
@@ -74,7 +63,7 @@ function getBabelCommonConfig() {
   };
 }
 
-function babelify(js, dir = '') {
+function babelify(js) {
   const babelConfig = getBabelCommonConfig();
   const stream = js.pipe(babel(babelConfig));
   return stream
@@ -88,13 +77,27 @@ function babelify(js, dir = '') {
       this.push(file);
       next();
     }))
-    .pipe(gulp.dest(path.join(libDir, dir)));
+    .pipe(gulp.dest(libDir));
 }
 
 gulp.task('compile', () => {
   compile();
 });
 
-gulp.task('compile-bin', () => {
-  compileBin();
+gulp.task('compileJs', () => {
+  compileFile('js');
+});
+
+gulp.task('compileJsx', () => {
+  compileFile('jsx');
+});
+
+gulp.task('compileAssets', () => {
+  compileAssets();
+});
+
+gulp.task('watch', () => {
+  gulp.watch(path.join(__dirname, 'src/**/*.js'), ['compileJs']);
+  gulp.watch(path.join(__dirname, 'src/**/*.jsx'), ['compileJsx']);
+  gulp.watch(path.join(__dirname, 'src/**/*.@(jpg|png|svg|scss|html|ico)'), ['compileAssets']);
 });

@@ -7,7 +7,6 @@ import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
 import chalk from 'chalk';
 import getBabelCommonConfig from './getBabelCommonConfig';
 import getTSCommonConfig from './getTSCommonConfig';
-import context from '../bin/common/context';
 
 const jsFileName = '[name].[hash:8].js';
 const jsChunkFileName = 'chunks/[name].[chunkhash:5].chunk.js';
@@ -26,7 +25,6 @@ function getAssetLoader(mimetype, limit = 10000) {
 }
 
 export default function getWebpackCommonConfig(mode, env) {
-  const { isDev } = context;
   const babelOptions = getBabelCommonConfig(mode, env);
   const tsOptions = getTSCommonConfig();
 
@@ -55,7 +53,7 @@ export default function getWebpackCommonConfig(mode, env) {
     }),
     new FriendlyErrorsWebpackPlugin(),
     new webpack.ProvidePlugin({
-      Choerodon: isDev ? join(process.cwd(), 'src/containers/common') : join(__dirname, '../containers/common'),
+      Choerodon: join(__dirname, '../containers/common'),
     }),
   ];
 

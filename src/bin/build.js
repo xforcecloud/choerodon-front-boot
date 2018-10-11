@@ -23,9 +23,9 @@ function dist(mainPackage, env) {
 
   webpack(webpackConfig, (err, stats) => {
     if (err !== null) {
-      warning(false, err);
+      // warning(true, err);
     } else if (stats.hasErrors()) {
-      warning(false, stats.toString('errors-only'));
+      // warning(true, stats.toString('errors-only'));
     }
   });
 }

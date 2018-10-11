@@ -23,8 +23,6 @@ export { default as Remove } from './remove';
 
 export { default as DashBoardNavBar } from './dashboard/Navbar';
 
-export { default as DashBoardToolBar } from './dashboard/Toolbar';
-
 export { default as axios } from './axios';
 
 export { default as store } from './store';
