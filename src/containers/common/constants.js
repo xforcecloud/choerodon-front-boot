@@ -7,5 +7,5 @@ export const AUTH_URL = `${AUTH_HOST}/oauth/authorize?response_type=token&client
 export const LOCAL = JSON.parse(process.env.LOCAL || 'true');
 export const COOKIE_SERVER = `${process.env.COOKIE_SERVER}`;
 export const FILE_SERVER = `${process.env.FILE_SERVER}`;
-export const HEADER_TITLE_NAME = `${process.env.HEADER_TITLE_NAME || 'Choerodon'}`;
+export const HEADER_TITLE_NAME = `${process.env.HEADER_TITLE_NAME || 'XforceCloud'}`;
 export const USE_DASHBOARD = JSON.parse(process.env.USE_DASHBOARD || 'false');
