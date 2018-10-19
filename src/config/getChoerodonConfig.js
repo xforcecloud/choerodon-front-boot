@@ -32,7 +32,7 @@ const defaultConfig = {
   titlename: 'XforceCloud',
   favicon: 'favicon.ico',
   theme: {
-    'primary-color': '#00896C',
+    'primary-color': '#3F51B5',
   },
   dashboard: false,
 };
