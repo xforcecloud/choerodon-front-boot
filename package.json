@@ -1,6 +1,6 @@
 {
   "name": "choerodon-front-boot",
-  "version": "6.1.12",
+  "version": "6.1.13",
   "description": "Tools to build website for Choerodon",
   "main": "lib/containers/components/index.js",
   "bin": {
