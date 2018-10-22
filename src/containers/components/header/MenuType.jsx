@@ -86,13 +86,15 @@ export default class MenuType extends Component {
       let route;
       let path;
       let domain;
-      if (menus.length) {
+      if (dashboard) {
+        route = '/';
+      } else if (menus.length) {
         const { route: menuRoute, domain: menuDomain } = findFirstLeafMenu(menus[0]);
         route = menuRoute;
         domain = menuDomain;
       }
       if (route) {
-        path = `${route}?type=${type}&id=${id}&name=${encodeURIComponent(name)}`;
+        path = `${route}?type=${type}&id=${id}&name=${name}`;
         if (organizationId) {
           path += `&organizationId=${organizationId}`;
         }

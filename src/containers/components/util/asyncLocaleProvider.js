@@ -11,54 +11,84 @@ import 'rxjs/add/observable/fromPromise';
 
 export default function asyncLocaleProvider(locale, getMessage, getLocaleData) {
   return class AsyncLocaleProvider extends Component {
+    static Message = null;
+
+    static needLoadLocaleData = true && getLocaleData;
+
+    static LocaleData = null;
+
     state = {
-      message: null,
-      localeData: null,
+      Message: AsyncLocaleProvider.Message,
+      LocaleData: AsyncLocaleProvider.LocaleData,
+      needLoadLocaleData: AsyncLocaleProvider.needLoadLocaleData,
     };
 
-    componentWillUnmountSubject = new Subject();
-
     componentWillMount() {
-      const subject = this.componentWillUnmountSubject;
-      const streams = [];
-      if (getMessage) {
-        streams.push(
-          Observable.fromPromise(getMessage())
-            .map(esModule)
-            .takeUntil(subject),
-        );
-      }
-      if (getLocaleData) {
-        streams.push(
-          Observable.fromPromise(getLocaleData())
-            .map(esModule)
-            .takeUntil(subject),
-        );
-      }
-      if (streams.length > 0) {
+      const { Message, LocaleData, needLoadLocaleData } = this.state;
+
+      if (!Message || (needLoadLocaleData && !LocaleData)) {
+        this.componentWillUnmountSubject = new Subject();
+
+        const streams = [
+          Message
+            ? Observable.of(Message)
+              .takeUntil(this.componentWillUnmountSubject)
+            : Observable.fromPromise(getMessage())
+              .map(esModule)
+              .map((message) => {
+                AsyncLocaleProvider.Message = message;
+                return message;
+              })
+              .takeUntil(this.componentWillUnmountSubject),
+        ];
+
+        if (getLocaleData) {
+          streams.push(
+            needLoadLocaleData && LocaleData
+              ? Observable.of(LocaleData)
+                .takeUntil(this.componentWillUnmountSubject)
+              : Observable.fromPromise(getLocaleData())
+                .map(esModule)
+                .takeUntil(this.componentWillUnmountSubject),
+          );
+        }
+
         Observable.zip(...streams)
-          .takeUntil(subject)
-          .subscribe(([messages, localeData]) => {
-            if (localeData) {
-              addLocaleData(localeData);
+          .takeUntil(this.componentWillUnmountSubject)
+          .subscribe(([message, localeData]) => {
+            if (this.mounted) {
+              this.setState({ Message: message, LocaleData: localeData });
+            } else {
+              this.state.Message = message;
+              this.state.LocaleData = localeData;
             }
-            this.setState({ messages, localeData });
-            subject.unsubscribe();
+
+            this.componentWillUnmountSubject.unsubscribe();
           });
       }
     }
 
+    componentDidMount() {
+      this.mounted = true;
+    }
+
     componentWillUnmount() {
-      const subject = this.componentWillUnmountSubject;
-      if (subject && !subject.closed) {
-        subject.next();
-        subject.unsubscribe();
+      if (this.componentWillUnmountSubject && !this.componentWillUnmountSubject.closed) {
+        this.componentWillUnmountSubject.next();
+        this.componentWillUnmountSubject.unsubscribe();
       }
     }
 
     render() {
-      const { messages } = this.state;
-      return messages ? <IntlProvider {...this.props} locale={locale.replace('_', '-')} messages={messages} /> : null;
+      const { Message, LocaleData, needLoadLocaleData } = this.state;
+      if (needLoadLocaleData) {
+        if (!LocaleData) {
+          return null;
+        } else {
+          addLocaleData(LocaleData);
+        }
+      }
+      return Message ? <IntlProvider {...this.props} locale={locale.replace('_', '-')} messages={Message} /> : null;
     }
   };
 }

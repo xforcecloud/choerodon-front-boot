@@ -1,10 +1,11 @@
 import React, { Children, cloneElement, Component, createElement, isValidElement } from 'react';
 import PropTypes from 'prop-types';
-import { inject, observer } from 'mobx-react';
+import { observer } from 'mobx-react';
 import omit from 'object.omit';
+import AppState from '../../stores/AppState';
+import PermissionStore from '../../stores/PermissionStore';
 import PermissionWrapper from './PermissionWrapper';
 
-@inject('AppState', 'PermissionStore')
 @observer
 class Permission extends Component {
   static propTypes = {
@@ -26,11 +27,11 @@ class Permission extends Component {
   }
 
   check(props) {
-    this.props.PermissionStore.check(this.getPermissionProps(props));
+    PermissionStore.check(this.getPermissionProps(props));
   }
 
   getPermissionProps(props) {
-    const { type: typeState = 'site', id = 0, projectId: projectIdState, organizationId: organizationIdState } = props.AppState.currentMenuType || {};
+    const { type: typeState, id, projectId: projectIdState, organizationId: organizationIdState } = AppState.currentMenuType;
     const {
       service,
       type = typeState,
@@ -60,10 +61,9 @@ class Permission extends Component {
   }
 
   render() {
-    const { defaultChildren, children, noAccessChildren, onAccess, PermissionStore } = this.props;
+    const { defaultChildren, children, noAccessChildren, onAccess } = this.props;
     const otherProps = omit(this.props, [
-      'service', 'type', 'organizationId', 'projectId', 'defaultChildren',
-      'noAccessChildren', 'children', 'onAccess', 'PermissionStore', 'AppState',
+      'service', 'type', 'organizationId', 'projectId', 'defaultChildren', 'noAccessChildren', 'children', 'onAccess',
     ]);
     const status = PermissionStore.access(this.getPermissionProps(this.props));
     if (status === 'success') {

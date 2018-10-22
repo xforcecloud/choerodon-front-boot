@@ -9,12 +9,11 @@ import getPackagePath from './common/getPackagePath';
 import initialize from './common/initialize';
 import installSubmoduleDependencies from './common/installSubmoduleDependencies';
 
-function run(mainPackage, dev) {
-  const { choerodonConfig: { entryName, devServerConfig, output, port } } = context;
+function run(mainPackage) {
+  const { choerodonConfig } = context;
   generateEntryFile(
     mainPackage,
-    entryName,
-    dev,
+    choerodonConfig.entryName,
   );
 
   const webpackConfig = updateWebpackConfig('start', 'development');
@@ -22,8 +21,8 @@ function run(mainPackage, dev) {
   const serverOptions = {
     quiet: true,
     hot: true,
-    ...devServerConfig,
-    contentBase: path.join(process.cwd(), output),
+    ...choerodonConfig.devServerConfig,
+    contentBase: path.join(process.cwd(), choerodonConfig.output),
     historyApiFallback: true,
     host: 'localhost',
   };
@@ -42,14 +41,14 @@ function run(mainPackage, dev) {
 
   const server = new WebpackDevServer(compiler, serverOptions);
   server.listen(
-    port, '0.0.0.0',
-    () => openBrowser(`http://localhost:${port}`),
+    choerodonConfig.port, '0.0.0.0',
+    () => openBrowser(`http://localhost:${choerodonConfig.port}`),
   );
 }
 
-export default function start(program, dev) {
-  initialize(program, dev);
-  if (!dev && program.args.length) {
+export default function start(program) {
+  initialize(program);
+  if (program.args.length) {
     installSubmoduleDependencies(program, run);
   } else {
     const mainPackagePath = getPackagePath();

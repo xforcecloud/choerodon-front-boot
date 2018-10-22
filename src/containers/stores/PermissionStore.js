@@ -26,22 +26,19 @@ class PermissionStore {
 
   access(props) {
     let status = 'success';
-    const services = this.judgeServices(props);
-    if (services.length > 0) {
-      const allFailure = services.every((item) => {
-        const { key, approve } = this.findPermission(item);
-        if (approve) {
-          status = 'success';
-          return false;
-        }
-        if (!key) {
-          status = 'pending';
-        }
-        return true;
-      });
-      if (allFailure && status !== 'pending') {
-        status = 'failure';
+    const allFailure = this.judgeServices(props).every((item) => {
+      const { key, approve } = this.findPermission(item);
+      if (approve) {
+        status = 'success';
+        return false;
       }
+      if (!key) {
+        status = 'pending';
+      }
+      return true;
+    });
+    if (allFailure && status !== 'pending') {
+      status = 'failure';
     }
     return status;
   }
