@@ -29,10 +29,10 @@ const defaultConfig = {
   server: 'http://api.example.com',
   fileServer: 'http://file.example.com',
   clientid: 'localhost',
-  titlename: 'Choerodon',
+  titlename: 'XforceCloud',
   favicon: 'favicon.ico',
   theme: {
-    'primary-color': '#3F51B5',
+    'primary-color': '#00896C',
   },
   dashboard: false,
 };
