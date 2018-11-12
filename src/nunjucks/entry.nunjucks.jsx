@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import React, { Component } from 'react';
 import { render } from 'react-dom';
 import { HashRouter as Router, Route, Switch } from 'react-router-dom';
@@ -5,12 +6,14 @@ import { createBrowserHistory } from 'history';
 import { configure } from 'mobx';
 import { observer, Provider } from 'mobx-react';
 import queryString from 'query-string';
-import stores from '../lib/containers/stores/index';
-import AppState from '../lib/containers/stores/AppState';
-import asyncRouter from '../lib/containers/components/util/asyncRouter';
-import asyncLocaleProvider from '../lib/containers/components/util/asyncLocaleProvider';
-import { authorize, getAccessToken, setAccessToken } from '../lib/containers/common/index';
-import '../lib/containers/components/style/index';
+import stores from '../{{ source }}/containers/stores';
+import AppState from '../{{ source }}/containers/stores/AppState';
+import asyncRouter from '../{{ source }}/containers/components/util/asyncRouter';
+import asyncLocaleProvider from '../{{ source }}/containers/components/util/asyncLocaleProvider';
+import { authorize, getAccessToken, setAccessToken, WEBSOCKET_SERVER } from '../{{ source }}/containers/common';
+import WSProvider from '../{{ source }}/containers/components/ws/WSProvider';
+import PermissionProvider from '../{{ source }}/containers/components/permission/PermissionProvider';
+import '../{{ source }}/containers/components/style';
 
 async function auth() {
   const { access_token: accessToken, token_type: tokenType, expires_in: expiresIn } = queryString.parse(window.location.hash);
@@ -28,26 +31,28 @@ const UILocaleProviderAsync = asyncRouter(() => import('choerodon-ui/lib/locale-
   locale: () => import(`choerodon-ui/lib/locale-provider/${AppState.currentLanguage}.js`),
 });
 
-const Masters = asyncRouter(() => import('../lib/containers/components/master'), {
+const Masters = asyncRouter(() => import('../{{ source }}/containers/components/master'), {
   AutoRouter: () => import('{{ routesPath }}'),
 });
 
 @observer
 class App extends Component {
   render() {
-    const langauge = AppState.currentLanguage;
-    const IntlProviderAsync = asyncLocaleProvider(langauge, () => import(`../lib/containers/locale/${langauge}`), () => import(`react-intl/locale-data/${langauge.split('_')[0]}`));
+    const language = AppState.currentLanguage;
+    const IntlProviderAsync = asyncLocaleProvider(language, () => import(`../{{ source }}/containers/locale/${language}`), () => import(`react-intl/locale-data/${language.split('_')[0]}`));
     return (
       <UILocaleProviderAsync>
         <IntlProviderAsync>
           <Provider {...stores}>
-            <div>
-              <Router hashHistory={createBrowserHistory}>
-                <Switch>
-                  <Route path="/" component={Masters} />
-                </Switch>
-              </Router>
-            </div>
+            <PermissionProvider>
+              <WSProvider server={WEBSOCKET_SERVER}>
+                <Router hashHistory={createBrowserHistory}>
+                  <Switch>
+                    <Route path="/" component={Masters} />
+                  </Switch>
+                </Router>
+              </WSProvider>
+            </PermissionProvider>
           </Provider>
         </IntlProviderAsync>
       </UILocaleProviderAsync>
@@ -56,7 +61,7 @@ class App extends Component {
 }
 
 if (auth()) {
-  configure({ enforceActions: true });
+  configure({ enforceActions: 'observed' });
 
   render(<App />, document.getElementById('app'));
 }
