@@ -7,6 +7,7 @@ import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
 import chalk from 'chalk';
 import getBabelCommonConfig from './getBabelCommonConfig';
 import getTSCommonConfig from './getTSCommonConfig';
+import context from '../bin/common/context';
 
 const jsFileName = '[name].[hash:8].js';
 const jsChunkFileName = 'chunks/[name].[chunkhash:5].chunk.js';
@@ -25,6 +26,7 @@ function getAssetLoader(mimetype, limit = 10000) {
 }
 
 export default function getWebpackCommonConfig(mode, env) {
+  const { isDev } = context;
   const babelOptions = getBabelCommonConfig(mode, env);
   const tsOptions = getTSCommonConfig();
 
@@ -53,7 +55,7 @@ export default function getWebpackCommonConfig(mode, env) {
     }),
     new FriendlyErrorsWebpackPlugin(),
     new webpack.ProvidePlugin({
-      Choerodon: join(__dirname, '../containers/common'),
+      Choerodon: isDev ? join(process.cwd(), 'src/containers/common') : join(__dirname, '../containers/common'),
     }),
   ];
 
@@ -63,9 +65,14 @@ export default function getWebpackCommonConfig(mode, env) {
         minimize: true,
       }),
       new UglifyJsPlugin({
+        parallel: true,
+        cache: true,
         uglifyOptions: {
           output: {
-            ascii_only: true,
+            comments: false,
+          },
+          compress: {
+            warnings: false,
           },
         },
       }),
@@ -80,11 +87,12 @@ export default function getWebpackCommonConfig(mode, env) {
       modules: ['node_modules', join(__dirname, '../../node_modules')],
       extensions: ['.web.tsx', '.web.ts', '.web.jsx', '.web.js', '.ts', '.tsx', '.js', '.jsx', '.json'],
     },
-
     resolveLoader: {
       modules: ['node_modules', join(__dirname, '../../node_modules')],
     },
-
+    node: {
+      fs: 'empty',
+    },
     module: {
       noParse: [/moment.js/],
       rules: [

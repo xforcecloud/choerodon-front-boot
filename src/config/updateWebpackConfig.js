@@ -1,5 +1,5 @@
 import fs from 'fs';
-import path from 'path';
+import { join } from 'path';
 import webpack from 'webpack';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
@@ -7,24 +7,32 @@ import context from '../bin/common/context';
 import getStyleLoadersConfig from './getStyleLoadersConfig';
 import getEnterPointsConfig from './getEnterPointsConfig';
 import getWebpackCommonConfig from './getWebpackCommonConfig';
+import getDefaultTheme from './getDefaultTheme';
 
-const choerodonLib = path.join(__dirname, '..');
+const choerodonLib = join(__dirname, '..');
 
 function getFilePath(file) {
-  const filePath = path.join(process.cwd(), file);
-  return fs.existsSync(filePath) ? filePath : path.join(__dirname, '..', file);
+  const { isDev } = context;
+  const filePath = join(process.cwd(), file);
+  if (fs.existsSync(filePath)) {
+    return filePath;
+  } else if (isDev) {
+    return join(process.cwd(), 'src', file);
+  } else {
+    return join(__dirname, '..', file);
+  }
 }
 
 export default function updateWebpackConfig(mode, env) {
   const webpackConfig = getWebpackCommonConfig(mode, env);
   const { choerodonConfig } = context;
   const {
-    theme, output, root, enterPoints, server, fileServer, clientid, local,
-    postcssConfig, entryName, titlename, htmlTemplate, favicon, dashboard,
+    theme, output, root, enterPoints, server, fileServer, webSocketServer, clientid, local,
+    postcssConfig, entryName, titlename, htmlTemplate, favicon, dashboard, guide,
   } = choerodonConfig;
   const styleLoadersConfig = getStyleLoadersConfig(postcssConfig, {
-    sourceMap: true,
-    modifyVars: theme,
+    sourceMap: mode === 'start',
+    modifyVars: Object.assign({}, getDefaultTheme(), theme),
   });
 
   let defaultEnterPoints;
@@ -46,10 +54,11 @@ export default function updateWebpackConfig(mode, env) {
       LOCAL: local,
       VERSION: '本地',
       FILE_SERVER: fileServer,
+      WEBSOCKET_SERVER: webSocketServer,
     };
   } else if (mode === 'build') {
     webpackConfig.output.publicPath = root;
-    webpackConfig.output.path = path.join(process.cwd(), output);
+    webpackConfig.output.path = join(process.cwd(), output);
     styleLoadersConfig.forEach((config) => {
       webpackConfig.module.rules.push({
         test: config.test,
@@ -64,6 +73,7 @@ export default function updateWebpackConfig(mode, env) {
   const mergedEnterPoints = {
     NODE_ENV: env,
     USE_DASHBOARD: !!dashboard,
+    USE_GUIDE: !!guide,
     ...defaultEnterPoints,
     ...enterPoints(mode, env),
   };
@@ -76,7 +86,7 @@ export default function updateWebpackConfig(mode, env) {
   if (customizedWebpackConfig.entry[entryName]) {
     throw new Error(`Should not set \`webpackConfig.entry.${entryName}\`!`);
   }
-  const entryPath = path.join(choerodonLib, '..', 'tmp', `entry.${entryName}.js`);
+  const entryPath = join(choerodonLib, '..', 'tmp', `entry.${entryName}.js`);
   customizedWebpackConfig.entry[entryName] = entryPath;
   customizedWebpackConfig.plugins.push(
     new webpack.DefinePlugin(defines),

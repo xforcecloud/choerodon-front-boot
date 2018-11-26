@@ -4,7 +4,7 @@ import { Link, withRouter } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
 import classNames from 'classnames';
 import findFirstLeafMenu from '../util/findFirstLeafMenu';
-import { dashboard, historyReplaceMenu } from '../../common';
+import { historyPushMenu } from '../../common';
 import './style';
 
 const { SubMenu, Item } = Menu;
@@ -184,7 +184,7 @@ export default class CommonMenu extends Component {
       });
       const { route, domian } = findFirstLeafMenu(selected);
       const link = this.getMenuLink(route);
-      historyReplaceMenu(history, link, domian);
+      historyPushMenu(history, link, domian);
     }
     this.collapseMenu();
   };
@@ -218,29 +218,20 @@ export default class CommonMenu extends Component {
 
   renderLeftMenu(child, selected, expanded) {
     if (child.length > 0) {
-      const { AppState, MenuStore } = this.props;
-      let homePath = '/';
-      if (dashboard) {
-        const { type, id, name, organizationId } = AppState.currentMenuType;
-        if (type && type !== 'site') {
-          homePath = `${homePath}?type=${type}&id=${id}&name=${name}`;
-          if (organizationId) {
-            homePath += `&organizationId=${organizationId}`;
-          }
-        }
-      }
+      const { MenuStore } = this.props;
+
       return (
         <div className={`common-menu-left ${expanded ? 'expanded' : ''}`}>
           <div
             className="common-menu-left-header"
             role="none"
           >
-            <Link to={homePath} onClick={this.collapseMenu}><Icon type="home" /><span>主页</span></Link>
+            <Link to="/" onClick={this.collapseMenu}><Icon type="home" /><span>主页</span></Link>
           </div>
           <div className="common-menu-right-content">
             <Menu
               onClick={this.handleClick}
-              openKeys={MenuStore.leftOpenKeys}
+              openKeys={MenuStore.leftOpenKeys.slice()}
               onOpenChange={this.handleLeftOpenChange}
               selectedKeys={[selected.code]}
               mode="vertical"
@@ -308,7 +299,7 @@ export default class CommonMenu extends Component {
             mode="inline"
             inlineCollapsed={collapsed}
             selectedKeys={[activeMenu && activeMenu.code]}
-            openKeys={openKeys}
+            openKeys={openKeys.slice()}
             onOpenChange={this.handleOpenChange}
           >
             {menu.subMenus.map(two => this.getMenuSingle(two, 0))}
@@ -323,7 +314,7 @@ export default class CommonMenu extends Component {
 
   render() {
     // 服务的菜单
-    const { MenuStore, AppState } = this.props;
+    const { MenuStore, AppState, location } = this.props;
     const child = MenuStore.getMenuData;
     if (child && child.length > 0) {
       const { selected } = MenuStore;
@@ -339,7 +330,7 @@ export default class CommonMenu extends Component {
         <div style={{ height: '100%' }}>
           <div className="common-menu">
             {this.renderLeftMenu(child, selected || child[0], expanded)}
-            {this.renderRightMenu(selected || child[0])}
+            {location.pathname !== '/' && this.renderRightMenu(selected || child[0])}
           </div>
           {mask}
         </div>

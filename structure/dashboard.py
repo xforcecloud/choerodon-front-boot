@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 # _*_ coding:utf-8 _*_
 
 import json
@@ -78,12 +78,13 @@ def insertDb():
     contentConfig = yaml.load(ymlFile)
     insertDashboard(contentConfig)
     insertDashbaordTl(contentConfig)
+    insertDashboardRole(contentConfig)
     cursor.close()
     db.close()
     ymlFile.close()
 
 def returnId(table, code, namespace):
-    sql = "select id from {table} where code='{code}' and namespace='{namespace}'".format(table=table, code=code, namespace=namespace)
+    sql = "SELECT ID FROM {table} WHERE CODE='{code}' AND NAMESPACE='{namespace}'".format(table=table, code=code, namespace=namespace)
     cursor.execute(sql)
     Id = cursor.fetchone()
     return Id
@@ -92,13 +93,13 @@ def insertDashboard(data):
     try:
         dashboards = data["dashboard"]
         dataLanguageChinese = data["language"]["Chinese"]
-        table = "iam_dashboard"
+        table = "IAM_DASHBOARD"
         for i in dashboards:
             dashboard = dashboards[i]
             Id = returnId(table, dashboard["code"], dashboard["namespace"])
             if Id:
-                sql = "update {table} set code='{code}', level='{level}', icon='{icon}', sort='{sort}', namespace='{namespace}'"
-                sql = (sql + " where code='{code}' and level='{level}'").format(
+                sql = "UPDATE {table} SET CODE='{code}', FD_LEVEL='{level}', ICON='{icon}', SORT='{sort}', NAMESPACE='{namespace}'"
+                sql = (sql + " WHERE CODE='{code}' AND FD_LEVEL='{level}'").format(
                     table=table,
                     code=dashboard["code"],
                     namespace=dashboard["namespace"],
@@ -107,7 +108,7 @@ def insertDashboard(data):
                     sort=dashboard["sort"])
                 cursor.execute(sql)
             else:
-                sql = "insert into {table} (code, name, level, title, description, icon, namespace, sort) values ('{code}', '{name}', '{level}', '{title}', '{description}', '{icon}', '{namespace}', '{sort}')"
+                sql = "INSERT INTO {table} (CODE, NAME, FD_LEVEL, TITLE, DESCRIPTION, ICON, NAMESPACE, SORT) VALUES ('{code}', '{name}', '{level}', '{title}', '{description}', '{icon}', '{namespace}', '{sort}')"
                 sql = sql.format(
                     table=table,
                     code=dashboard["code"],
@@ -126,33 +127,64 @@ def insertDashbaordTl(data):
         dashboards = data["dashboard"]
         dataLanguageEnglish = data["language"]["English"]
         dataLanguageChinese = data["language"]["Chinese"]
-        table = "iam_dashboard_tl"
+        table = "IAM_DASHBOARD_TL"
         for i in dashboards:
             dashboard = dashboards[i]
-            Id = returnId("iam_dashboard", dashboard["code"], dashboard["namespace"])
+            Id = returnId("IAM_DASHBOARD", dashboard["code"], dashboard["namespace"])
             if Id:
-                sql = "select id from {table} where id={id}".format(
+                sql = "SELECT ID FROM {table} WHERE ID={id}".format(
                         table=table,
-                        id=Id["id"])
+                        id=Id["ID"])
                 count = cursor.execute(sql)
                 if count == 0:
-                    insertTl(table, 'en_US', Id["id"], dataLanguageEnglish[i])
-                    insertTl(table, 'zh_CN', Id["id"], dataLanguageChinese[i])
+                    insertTl(table, 'en_US', Id["ID"], dataLanguageEnglish[i])
+                    insertTl(table, 'zh_CN', Id["ID"], dataLanguageChinese[i])
                 else:
-                    updateTl(table, 'en_US', Id["id"], dataLanguageEnglish[i])
-                    updateTl(table, 'zh_CN', Id["id"], dataLanguageChinese[i])
+                    updateTl(table, 'en_US', Id["ID"], dataLanguageEnglish[i])
+                    updateTl(table, 'zh_CN', Id["ID"], dataLanguageChinese[i])
+    except:
+        dealFault()
+def insertDashboardRole(data):
+    try:
+        dashboards = data["dashboard"]
+        table = "IAM_DASHBOARD_ROLE"
+        for i in dashboards:
+            dashboard = dashboards[i]
+            Id = returnId("IAM_DASHBOARD", dashboard["code"], dashboard["namespace"])
+            if Id:
+                if "roles" in dashboard:
+                    roles = dashboard["roles"]
+                    for role in roles:
+                        sql = "SELECT ID FROM IAM_ROLE WHERE CODE='{code}' AND FD_LEVEL='{level}'".format(code=role, level=dashboard["level"]);
+                        cursor.execute(sql)
+                        roleId = cursor.fetchone()
+                        if roleId:
+                            sql = "SELECT ID FROM IAM_DASHBOARD_ROLE WHERE DASHBOARD_ID='{dashboardId}' AND ROLE_ID='{roleId}'".format(
+                                table=table,
+                                dashboardId=Id["ID"],
+                                roleId=roleId["ID"]
+                            )
+                            cursor.execute(sql)
+                            select = cursor.fetchone()   
+                            if not select:
+                                sql = "INSERT INTO {table} (DASHBOARD_ID, ROLE_ID) VALUES ('{dashboardId}', '{roleId}')".format(
+                                    table=table,
+                                    dashboardId=Id["ID"],
+                                    roleId=roleId["ID"]
+                                )
+                                cursor.execute(sql)
     except:
         dealFault()
 
 def insertTl(table, lang, id, name):
-    sql = "insert into {table} (lang,id,name) values ('{lang}','{id}','{name}')".format(
+    sql = "INSERT INTO {table} (LANG, ID, NAME) VALUES ('{lang}','{id}','{name}')".format(
         table=table,
         lang=lang,
         id=id,
         name=name)
     cursor.execute(sql)
 def updateTl(table, lang, id, name):
-    sql = "update {table} set id='{id}', name='{name}' where id={id} and lang='{lang}'".format(
+    sql = "UPDATE {table} SET ID='{id}', NAME='{name}' WHERE ID={id} AND LANG='{lang}'".format(
         table=table,
         lang=lang,
         id=id,

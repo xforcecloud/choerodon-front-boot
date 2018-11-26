@@ -1,4 +1,4 @@
-'use strict';
+
 
 const path = require('path');
 const gulp = require('gulp');
@@ -14,22 +14,39 @@ function compileAssets() {
   return gulp.src(['src/**/*.@(jpg|png|svg|scss|html|ico)']).pipe(gulp.dest(libDir));
 }
 
-function compileFile(type) {
-  const source = [];
-  if (!type || type === 'js') {
-    source.push('src/**/*.js');
-  }
-  if (!type || type === 'jsx') {
-    source.push('src/**/*.jsx');
-  }
+function compileFile() {
+  const source = [
+    'src/**/*.js',
+    'src/**/*.jsx',
+  ];
   return babelify(gulp.src(source));
+}
+
+function compileBin() {
+  rimraf.sync(libDir);
+  compileDir('bin');
+  compileDir('common');
+  compileDir('config');
+  compileDir('nunjucks');
+}
+
+function compileDir(dir) {
+  babelify(gulp.src([
+    'src/' + dir + '/**/*.js',
+    'src/' + dir + '/**/*.jsx',
+  ]), dir);
 }
 
 function compile() {
   rimraf.sync(libDir);
-  const assets = compileAssets();
-  const jsFilesStream = compileFile();
-  // return merge2([jsFilesStream, assets]);
+  compileAssets();
+  compileFile();
+}
+
+function copyTo(dir) {
+  rimraf.sync(dir);
+  gulp.src('lib/**/*')
+    .pipe(gulp.dest(dir));
 }
 
 function getBabelCommonConfig() {
@@ -63,12 +80,12 @@ function getBabelCommonConfig() {
   };
 }
 
-function babelify(js) {
+function babelify(js, dir = '') {
   const babelConfig = getBabelCommonConfig();
   const stream = js.pipe(babel(babelConfig));
   return stream
     .pipe(through2.obj(function (file, encoding, next) {
-      const matches = file.path.match(/(routes|dashboard)\.nunjucks\.js/);
+      const matches = file.path.match(/(routes|dashboard|guide)\.nunjucks\.(js|jsx)/);
       if (matches) {
         const content = file.contents.toString(encoding);
         file.contents = Buffer.from(content
@@ -77,27 +94,17 @@ function babelify(js) {
       this.push(file);
       next();
     }))
-    .pipe(gulp.dest(libDir));
+    .pipe(gulp.dest(path.join(libDir, dir)));
 }
 
 gulp.task('compile', () => {
   compile();
 });
 
-gulp.task('compileJs', () => {
-  compileFile('js');
+gulp.task('compile-bin', () => {
+  compileBin();
 });
 
-gulp.task('compileJsx', () => {
-  compileFile('jsx');
-});
-
-gulp.task('compileAssets', () => {
-  compileAssets();
-});
-
-gulp.task('watch', () => {
-  gulp.watch(path.join(__dirname, 'src/**/*.js'), ['compileJs']);
-  gulp.watch(path.join(__dirname, 'src/**/*.jsx'), ['compileJsx']);
-  gulp.watch(path.join(__dirname, 'src/**/*.@(jpg|png|svg|scss|html|ico)'), ['compileAssets']);
+gulp.task('copy', () => {
+  copyTo('/Users/binjiechen/choerodon-front-iam/iam/node_modules/choerodon-front-boot/lib');
 });
