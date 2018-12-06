@@ -36,7 +36,7 @@ export default class PageContent extends Component {
                 {description}
                 {
                   link && (
-                    <a href={link} target="_blank" rel="noreferrer noopener">
+                    <a href={link} target="_blank" rel="noreferrer noopener" className="description-display">
                       <FormattedMessage id="learnmore" defaultMessage="了解更多" />
                       <Icon type="open_in_new" />
                     </a>
