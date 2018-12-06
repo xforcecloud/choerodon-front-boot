@@ -1,5 +1,5 @@
 const defaultTheme = {
-  'primary-color': '#3f51b5',
+  'primary-color': '#00896C',
   'c7n-prefix': 'c7n',
 };
 

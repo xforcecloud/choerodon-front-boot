@@ -30,7 +30,7 @@ const defaultConfig = {
   fileServer: 'http://file.example.com',
   webSocketServer: 'ws://ws.example.com',
   clientid: 'localhost',
-  titlename: 'Choerodon | 企业级数字服务平台',
+  titlename: 'XforceCloud | 上海云励信息科技',
   favicon: 'favicon.ico',
   dashboard: false,
   guide: false,
