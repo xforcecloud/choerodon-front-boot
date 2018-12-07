@@ -12,8 +12,8 @@ $c7n-boot-header: #{$c7n-prefix}-boot-header;
     box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.16);
     position: relative;
     z-index: 999;
-    background-color: $primary-color;
-    //background: -webkit-linear-gradient(left, #5DAC81, #A8D889, #A8D889, #5DAC81);
+    //background-color: $primary-color;
+    background: -webkit-linear-gradient(left, #5DAC81, #A8D889, #A8D889, #5DAC81);
     li {
       list-style-type: none;
       margin: auto 10px;
