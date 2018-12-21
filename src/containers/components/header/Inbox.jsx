@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
 import TimeAgo from 'timeago-react';
 import { inject, observer } from 'mobx-react';
-import timeago from 'timeago.js';
 import { Badge, Button, Icon, Popover, Spin, Tabs, Card, Avatar, Tooltip } from 'choerodon-ui';
 import WSHandler from '../ws/WSHandler';
 import { PREFIX_CLS } from '../../common/constants';
 
 const prefixCls = `${PREFIX_CLS}-boot-header-inbox`;
 const popoverPrefixCls = `${prefixCls}-popover`;
-timeago.register('zh_CN', require('./locale/zh_CN'));
+TimeAgo.register('zh_CN', require('./locale/zh_CN'));
 
 /* eslint-disable-next-line */
 const reg = /\n|&nbsp;|&lt|&gt|<[^a\/][^>]*>|<\/[^a][^>]*>/g;
