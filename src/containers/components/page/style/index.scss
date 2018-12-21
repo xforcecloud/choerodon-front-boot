@@ -42,7 +42,8 @@
     padding: 0 10px;
     line-height: 28px;
     height: 28px;
-    color: rgb(63, 81, 181);
+    //color: rgb(63, 81, 181);
+    color: rgb(0, 137, 108);
     align-items: center;
     &[disabled] {
       color: rgba(0, 0, 0, .26);
@@ -107,5 +108,9 @@
     .icon {
       font-size: inherit;
     }
+  }
+
+  .description-display {
+    display: none;
   }
 }
