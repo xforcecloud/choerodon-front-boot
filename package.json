@@ -1,6 +1,6 @@
 {
   "name": "choerodon-front-boot",
-  "version": "6.1.46",
+  "version": "6.1.51",
   "description": "Tools to build website for Choerodon",
   "main": "lib/containers/components/index.js",
   "homepage": "http://choerodon.io/",
@@ -104,8 +104,7 @@
     "style-loader": "0.13.1",
     "stylelint": "^8.4.0",
     "stylelint-config-standard": "^18.0.0",
-    "timeago-react": "^2.0.0",
-    "timeago.js": "^4.0.0-beta.2",
+    "timeago-react": "2.0.0",
     "ts-loader": "^2.0.2",
     "ts-node": "^4.0.2",
     "tslint": "^5.9.1",
